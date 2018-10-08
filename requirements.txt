@@ -1,0 +1,4 @@
+Django>=2
+django-extensions>=2
+djangorestframework==3.7.7
+django-crispy-forms==1.7.0

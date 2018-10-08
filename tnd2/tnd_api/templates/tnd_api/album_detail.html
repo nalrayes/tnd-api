@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<p><a class="btn btn-default" href="{% url 'tnd_api_album_list' %}">Album Listing</a></p>
+<table class="table">
+<tr><td>title</td><td>{{ object.title }}</td></tr>
+<tr><td>slug</td><td>{{ object.slug }}</td></tr>
+<tr><td>created</td><td>{{ object.created }}</td></tr>
+<tr><td>last_updated</td><td>{{ object.last_updated }}</td></tr>
+<tr><td>review_release_date</td><td>{{ object.review_release_date }}</td></tr>
+<tr><td>fav_tracks</td><td>{{ object.fav_tracks }}</td></tr>
+<tr><td>least_fav_track</td><td>{{ object.least_fav_track }}</td></tr>
+<tr><td>year_released</td><td>{{ object.year_released }}</td></tr>
+<tr><td>record_company</td><td>{{ object.record_company }}</td></tr>
+<tr><td>album_type</td><td>{{ object.album_type }}</td></tr>
+<tr><td>spotify_link</td><td>{{ object.spotify_link }}</td></tr>
+<tr><td>detailed_genres</td><td>{{ object.detailed_genres }}</td></tr>
+<tr><td>youtube_link</td><td>{{ object.youtube_link }}</td></tr>
+<tr><td>description</td><td>{{ object.description }}</td></tr>
+</table>
+<a class="btn btn-primary" href="{{object.get_update_url}}">Edit Album</a>
+
+{% endblock %}

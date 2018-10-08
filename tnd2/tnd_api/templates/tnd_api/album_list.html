@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<p><a class="btn btn-default" href="{% url 'tnd_api_album_list' %}">Album Listing</a></p>
+<table class="table">
+<tr>
+<td>ID</td><td>Link</td>
+    <td>title</td>
+    <td>slug</td>
+    <td>created</td>
+    <td>last_updated</td>
+    <td>review_release_date</td>
+    <td>fav_tracks</td>
+    <td>least_fav_track</td>
+    <td>year_released</td>
+    <td>record_company</td>
+    <td>album_type</td>
+    <td>spotify_link</td>
+    <td>detailed_genres</td>
+    <td>youtube_link</td>
+    <td>description</td>
+</tr>
+{% for object in object_list %}
+<tr>
+    <td>{{object.pk}}</td>
+    <td><a href="{{object.get_absolute_url}}">{{object}}</a></td>
+    <td>{{ object.title }}</td>
+    <td>{{ object.slug }}</td>
+    <td>{{ object.created }}</td>
+    <td>{{ object.last_updated }}</td>
+    <td>{{ object.review_release_date }}</td>
+    <td>{{ object.fav_tracks }}</td>
+    <td>{{ object.least_fav_track }}</td>
+    <td>{{ object.year_released }}</td>
+    <td>{{ object.record_company }}</td>
+    <td>{{ object.album_type }}</td>
+    <td>{{ object.spotify_link }}</td>
+    <td>{{ object.detailed_genres }}</td>
+    <td>{{ object.youtube_link }}</td>
+    <td>{{ object.description }}</td>
+</tr>
+{% endfor %}
+</table><a class="btn btn-primary" href="{% url 'tnd_api_album_create' %}">Create new Album</a>
+{% endblock %}
