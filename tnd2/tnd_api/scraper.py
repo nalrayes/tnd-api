@@ -34,6 +34,7 @@ def get_video_information(video_json):
     video_dict['label'] = get_label(description)
     video_dict['score'] = get_score(description)
     video_dict['genres'] = get_genres(description)
+    video_dict['year_released'] = get_year_released(description)
 
     return video_dict
 
@@ -47,44 +48,43 @@ def get_video_information(video_json):
 
 # get array of videos by id
 
-# return list or string?
-def get_fav_tracks(desc):
-    res = re.search("FAV TRACKS: ([\w+, ]+)", desc)
-    return res[1]
-
-def get_least_fav_track(desc):
-    res = re.search("LEAST FAV TRACK: ([\w+ ]+)", desc)
-    return res[1]
-
 def get_artist_name_from_title(title):
-    res = re.search("((\w+ +)+)-", title)
-    return res[1].strip()
-
-def get_artist_name_from_desc(desc):
-    res = re.search("LEAST FAV TRACK: [\w+ ]+\n\n((\w+ )+)-", desc)
+    # maybe also a bit greedy
+    res = re.search("(.+) -", title)
     return res[1].strip()
 
 def get_album_name_from_title(title):
-    res = re.search("-( ?.+){1}? \w+ REVIEW", title)
+    # is this greedy
+    res = re.search("- ( ?.+){1}? \w+ REVIEW", title)
     return res[1].strip()
 
-def get_album_name_from_desc(desc):
-    res = re.search("LEAST FAV TRACK: [\w+ ]+\n\n(\w+ )+-(( ?.+){1}?) \/ \d", desc)
-    return res[2].strip()
+# return list or string?
+def get_fav_tracks(desc):
+    # is this ok or is it too broad? seems ok but gotta double check
+    res = re.search("FAV TRACKS: (.+?)\\n", desc)
+    return res[1]
+
+def get_least_fav_track(desc):
+    res = re.search("LEAST FAV TRACK: (.+?)\\n", desc)
+    return res[1]
+
+def get_year_released(desc):
+    res = re.search("LEAST FAV TRACK: (.+?)\\n\\n((.+?)\/){2}", desc)
+    return res[3].strip()
 
 def get_label(desc):
     # this one search gets artist, album, and label. see if can consolidate? is that even necessary?
-    res = re.search("LEAST FAV TRACK: [\w+ ]+\n\n(\w+ )+-( ?.+) \/ ?\d+ ?\/( ?\w+ ?)+\/", desc)
-    return res[3].strip()
+    res = re.search("LEAST FAV TRACK: (.+?)\\n\\n((.+?)\/){2}(.+?)\/", desc)
+    return res[4].strip()
 
 # return int or string?
 def get_score(desc):
-    res = re.search("(\d+)\/10", desc)
+    res = re.search("\\n(( ?\w+ ?)+|\d+)\/10", desc)
     return res[1]
 
 # return list or string?
 def get_genres(desc):
-     res = re.search("\/((,?( +\w+ ?)+)+)\\n", desc)
+     res = re.search("\/((,?( +[\w!@#\$%\^\&*\)\(+=._-]+ ?)+)+)\n\n(( ?\w+ ?)+|\d+)\/10", desc)
      return res[1].strip()
 
 # get album type
