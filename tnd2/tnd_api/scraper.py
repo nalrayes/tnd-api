@@ -28,6 +28,7 @@ def get_video_information(video_json):
 
     video_dict['artist_name'] = get_artist_name_from_title(title)
     video_dict['album_name'] = get_album_name_from_title(title)
+    video_dict['album_type'] = get_album_type_from_title(title)
 
     video_dict['fav_tracks'] = get_fav_tracks(description)
     video_dict['least_fav_track'] = get_least_fav_track(description)
@@ -48,9 +49,13 @@ def get_video_information(video_json):
 
 # get array of videos by id
 
+def get_album_type_from_title(title):
+    res = re.search("- ( ?.+){1}? (\w+) REVIEW", title)
+    return res[2].strip()
+
 def get_artist_name_from_title(title):
     # maybe also a bit greedy
-    res = re.search("(.+) -", title)
+    res = re.search("(.+) ?-", title)
     return res[1].strip()
 
 def get_album_name_from_title(title):
@@ -62,29 +67,34 @@ def get_album_name_from_title(title):
 def get_fav_tracks(desc):
     # is this ok or is it too broad? seems ok but gotta double check
     res = re.search("FAV TRACKS: (.+?)\\n", desc)
+    if (res == None):
+        return ""
     return res[1]
 
 def get_least_fav_track(desc):
     res = re.search("LEAST FAV TRACK: (.+?)\\n", desc)
+    if (res == None):
+        return ""
     return res[1]
 
 def get_year_released(desc):
-    res = re.search("LEAST FAV TRACK: (.+?)\\n\\n((.+?)\/){2}", desc)
-    return res[3].strip()
+    res = re.search("\/ (\d+) \/", desc)
+    return res[1].strip()
 
 def get_label(desc):
     # this one search gets artist, album, and label. see if can consolidate? is that even necessary?
-    res = re.search("LEAST FAV TRACK: (.+?)\\n\\n((.+?)\/){2}(.+?)\/", desc)
-    return res[4].strip()
+    res = re.search("\/ \d+ \/ (.+) \/", desc)
+    return res[1].strip()
 
 # return int or string?
 def get_score(desc):
+    if ("/10" not in desc):
+        return ""
     res = re.search("\\n(( ?\w+ ?)+|\d+)\/10", desc)
+    # maybe check for isclassic or isnotgood
     return res[1]
 
 # return list or string?
 def get_genres(desc):
-     res = re.search("\/((,?( +[\w!@#\$%\^\&*\)\(+=._-]+ ?)+)+)\n\n(( ?\w+ ?)+|\d+)\/10", desc)
+     res = re.search("\/ \d+ \/ .+ \/ (.+) ?\n\n", desc)
      return res[1].strip()
-
-# get album type
