@@ -17,7 +17,8 @@ class Artist(models.Model):
     slug = extension_fields.AutoSlugField(populate_from='name', blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     last_updated = models.DateTimeField(auto_now=True, editable=False)
-    average_rating = models.DecimalField(max_digits=5, decimal_places=2)
+    # how can we auto populate this
+    average_rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
     class Meta:
@@ -42,7 +43,7 @@ class Rating(models.Model):
     created = models.DateTimeField(auto_now_add=True, editable=False)
     last_updated = models.DateTimeField(auto_now=True, editable=False)
     rating_val = models.IntegerField()
-    adjective = models.CharField(max_length=30)
+    adjective = models.CharField(max_length=30, blank=True, null=True)
 
 
     class Meta:
@@ -80,14 +81,15 @@ class Genre(models.Model):
 
     def get_update_url(self):
         return reverse('tnd_api_genre_update', args=(self.slug,))
-        
+
 class Album(models.Model):
 
     # Fields
-    title = models.CharField(max_length=255)
-    slug = extension_fields.AutoSlugField(populate_from='name', blank=True)
+    slug = extension_fields.AutoSlugField(populate_from='title', blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     last_updated = models.DateTimeField(auto_now=True, editable=False)
+
+    title = models.CharField(max_length=255)
     review_release_date = models.DateField()
     fav_tracks = models.TextField(max_length=510)
     least_fav_track = models.CharField(max_length=100)
@@ -102,7 +104,8 @@ class Album(models.Model):
     # Relationship Fields
     artists = models.ManyToManyField(Artist)
     rating = models.ForeignKey(Rating, on_delete=models.CASCADE)
-    genres = models.ManyToManyField(Genre)
+
+    genres = models.ManyToManyField(Genre, blank=True)
 
     class Meta:
         ordering = ('-created',)

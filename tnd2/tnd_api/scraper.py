@@ -1,6 +1,8 @@
 import re
 import requests
 import json
+import dateutil.parser
+from .models import *
 
 with open('tnd_api/config.json', 'r') as f:
     config = json.load(f)
@@ -21,25 +23,58 @@ def get_video_by_id(videoId):
     return req.json()
 
 def get_video_information(video_json):
-    snippet = video_json['items'][0]['snippet']
+    item = video_json['items'][0]
+
+    snippet = item['snippet']
     title = snippet['title']
     description = snippet['description']
-    video_dict = {}
+
+    id = item['id']
+    yt_link = "https://www.youtube.com/watch?v=" + id
+    video_dict = {"youtube_link": yt_link}
+
+    video_dict['review_release_date'] = dateutil.parser.parse(snippet["publishedAt"]).date()
 
     video_dict['artist_name'] = get_artist_name_from_title(title)
     video_dict['album_name'] = get_album_name_from_title(title)
     video_dict['album_type'] = get_album_type_from_title(title)
 
+    video_dict['description'] = description
     video_dict['fav_tracks'] = get_fav_tracks(description)
     video_dict['least_fav_track'] = get_least_fav_track(description)
     video_dict['label'] = get_label(description)
-    video_dict['score'] = get_score(description)
-    video_dict['genres'] = get_genres(description)
+    video_dict['rating'] = get_rating(description)
+    video_dict['detailed_genres'] = get_detailed_genres(description)
     video_dict['year_released'] = get_year_released(description)
 
     return video_dict
 
+# write video to database function
+def write_video_to_db(video_dict):
+    # create new artist for now, later check if it exists
+    artist, artist_created = Artist.objects.update_or_create(name=video_dict['artist_name'])
+    # also create new rating for now
+    rating, rating_created = Rating.objects.update_or_create(rating_val=int(video_dict['rating']))
+    # leave genre empty
+    album = Album(
+        title=video_dict['album_name'],
+        review_release_date=video_dict['review_release_date'],
+        fav_tracks=video_dict['fav_tracks'],
+        least_fav_track=video_dict['least_fav_track'],
+        year_released=video_dict['year_released'],
+        record_company=video_dict['label'],
+        album_type=video_dict['album_type'],
+        detailed_genres=video_dict['detailed_genres'],
+        youtube_link=video_dict['youtube_link'],
+        description=video_dict['description'],
+        rating=rating,
+    )
 
+    album.save()
+
+    album.artists.add(artist)
+
+# batch request function
 
 # get most recent video function
 
@@ -87,7 +122,7 @@ def get_label(desc):
     return res[1].strip()
 
 # return int or string?
-def get_score(desc):
+def get_rating(desc):
     if ("/10" not in desc):
         return ""
     res = re.search("\\n(( ?\w+ ?)+|\d+)\/10", desc)
@@ -95,6 +130,6 @@ def get_score(desc):
     return res[1]
 
 # return list or string?
-def get_genres(desc):
+def get_detailed_genres(desc):
      res = re.search("\/ \d+ \/ .+ \/ (.+) ?\n\n", desc)
      return res[1].strip()
