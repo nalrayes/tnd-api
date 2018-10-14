@@ -17,19 +17,29 @@ GOOGLE_API_URL = "https://www.googleapis.com"
 YOUTUBE_API_URL = GOOGLE_API_URL + YOUTUBE_API_PATH + YOUTUBE_API_VERSION + "/"
 
 # get video by id function
-def get_video_by_id(videoId):
-    payload = {"part": "snippet", "id": videoId ,"key": YOUTUBE_API_KEY}
+def get_video_by_id(video_id):
+    payload = {"part": "snippet", "id": video_id ,"key": YOUTUBE_API_KEY}
     req = requests.get(YOUTUBE_API_URL + 'videos', params=payload)
     return req.json()
 
-def get_video_information(video_json):
-    item = video_json['items'][0]
+def get_video_information_from_item_list(item_list):
+    video_info_list = []
+    for i in range (len(item_list)):
+        print("Starting " + str(i))
+        video_info = get_video_information_from_item(item_list[i])
+        video_info_list.append(video_info)
+        print("Done " + str(i))
+    return video_info_list
 
+def get_video_information_from_item(item):
     snippet = item['snippet']
     title = snippet['title']
     description = snippet['description']
+    if item['kind'] == "youtube#playlistItem":
+        id = snippet["resourceId"]["videoId"]
+    else:
+        id = item['id']
 
-    id = item['id']
     yt_link = "https://www.youtube.com/watch?v=" + id
     video_dict = {"youtube_link": yt_link}
 
@@ -79,6 +89,23 @@ def write_video_to_db(video_dict):
 # get most recent video function
 
 # get videos by playlist id (can do uploads for all videos)
+def get_playlist_items(playlist_id, page_token=None):
+    payload = {"part": "snippet", "playlistId": playlist_id , "maxResults": 50, "key": YOUTUBE_API_KEY}
+    if (page_token):
+        payload["pageToken"] = page_token
+    req = requests.get(YOUTUBE_API_URL + 'playlistItems', params=payload)
+    return req.json()
+
+def get_videos_by_playlist_id(playlist_id, page_token=None):
+    playlist_items_json = get_playlist_items(playlist_id, page_token=page_token)
+    playlist_items_items = playlist_items_json["items"]
+    if ("nextPageToken" in playlist_items_json):
+        token = playlist_items_json["nextPageToken"]
+        next_page_items = get_videos_by_playlist_id(playlist_id, page_token=token)
+        playlist_items_items.extend(next_page_items)
+    return playlist_items_items
+
+
 
 # get all reviews
 
@@ -119,17 +146,19 @@ def get_year_released(desc):
 def get_label(desc):
     # this one search gets artist, album, and label. see if can consolidate? is that even necessary?
     res = re.search("\/ \d+ \/ (.+) \/", desc)
+    if (res == None):
+        return ""
     return res[1].strip()
 
 # return int or string?
 def get_rating(desc):
     if ("/10" not in desc):
         return ""
-    res = re.search("\\n(( ?\w+ ?)+|\d+)\/10", desc)
+    res = re.search("\\n(( ?\w+ ?)|\d+)\/10", desc)
     # maybe check for isclassic or isnotgood
     return res[1]
 
 # return list or string?
 def get_detailed_genres(desc):
-     res = re.search("\/ \d+ \/ .+ \/ (.+) ?\n\n", desc)
+     res = re.search("\/(?!.+\/ ) (.+) ?\n\n\d+", desc)
      return res[1].strip()
