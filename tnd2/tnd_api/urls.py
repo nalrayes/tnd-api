@@ -23,9 +23,9 @@ urlpatterns = (
     # path('tnd_api/albums/<id:id>/', views.AlbumUpdateView.as_view(), name='tnd_api_album_id'),
 )
 
-# urlpatterns += (
+urlpatterns += (
 #     # urls for Artist
-#     path('tnd_api/artists/', views.ArtistListView.as_view(), name='tnd_api_artist_list'),
+    path('artists/', views.artists, name='tnd_api_artist_list'),
 #     path('tnd_api/artists/<slug:slug>/', views.ArtistCreateView.as_view(), name='tnd_api_artist_slug'),
 #     path('tnd_api/artists/<slug:slug>/', views.ArtistCreateView.as_view(), name='tnd_api_artist_slug'),
-# )
+)

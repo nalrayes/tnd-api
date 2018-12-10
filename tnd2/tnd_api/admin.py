@@ -12,6 +12,7 @@ class AlbumAdminForm(forms.ModelForm):
 class AlbumAdmin(admin.ModelAdmin):
     form = AlbumAdminForm
     rating_val = lambda album: album.rating.rating_val
+    rating_val.short_description = "rating"
     list_display = ['title', 'slug', rating_val, 'created', 'last_updated', 'review_release_date', 'fav_tracks', 'least_fav_track', 'year_released', 'record_company', 'album_type', 'spotify_link', 'detailed_genres', 'youtube_link']
     # readonly_fields = ['title', 'slug', 'created', 'last_updated', 'review_release_date', 'fav_tracks', 'least_fav_track', 'year_released', 'record_company', 'album_type', 'spotify_link', 'detailed_genres', 'youtube_link', 'description']
 
