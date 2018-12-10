@@ -1,76 +1,61 @@
+import operator
+import functools
 from django.views.generic import DetailView, ListView, UpdateView, CreateView
 from .models import Album, Artist, Rating, Genre
 from .forms import AlbumForm, ArtistForm, RatingForm, GenreForm
+from django.http import JsonResponse
+from django.db.models import Q
 
+def _create_album_json(album):
+    res = {
+        'id': album.id,
+        'title': album.title,
+        'fav-tracks': album.fav_tracks,
+        'least-fav-track': album.least_fav_track,
+        'year': album.year_released,
+        'record-company': album.record_company,
+        'type': album.album_type,
+        'detailed-genres': album.detailed_genres,
+        'youtube-link': album.youtube_link,
+        'rating': album.rating.rating_val,
+        }
+    artist_list = []
+    for artist in album.artists.all():
+        artist_list.append({"id": artist.id, "name": artist.name})
+    res["artists"] = artist_list
+    return res
 
-class AlbumListView(ListView):
-    model = Album
+def _get_albums_with_params(params):
+    query_objects = []
+    if "genres" in params:
+        for genre in params["genres"].split(","):
+            query_objects.append(Q(detailed_genres__contains=genre))
+    return Album.objects.filter(functools.reduce(operator.and_, query_objects))
 
+def albums(request):
+    params = request.GET.copy()
+    max = 50
+    if "max" in params:
+        max = int(params.pop("max")[0])
+    sort_by = "review_release_date"
+    if "sort-by" in params:
+        sort_by = params.pop("sort-by")[0]
+        if sort_by == "rating":
+            sort_by = "-rating__rating_val"
+    albums_obj = {"params": params, "status": "success", "albums": []}
+    if len(params) > 0:
+        all_albums = _get_albums_with_params(params)
+    else:
+        all_albums = Album.objects.all()
 
-class AlbumCreateView(CreateView):
-    model = Album
-    form_class = AlbumForm
+    all_albums = all_albums.order_by(sort_by)
 
+    for a in all_albums:
+        albums_obj["albums"].append(_create_album_json(a))
+    return JsonResponse(albums_obj)
 
-class AlbumDetailView(DetailView):
-    model = Album
-
-
-class AlbumUpdateView(UpdateView):
-    model = Album
-    form_class = AlbumForm
-
-
-class ArtistListView(ListView):
-    model = Artist
-
-
-class ArtistCreateView(CreateView):
-    model = Artist
-    form_class = ArtistForm
-
-
-class ArtistDetailView(DetailView):
-    model = Artist
-
-
-class ArtistUpdateView(UpdateView):
-    model = Artist
-    form_class = ArtistForm
-
-
-class RatingListView(ListView):
-    model = Rating
-
-
-class RatingCreateView(CreateView):
-    model = Rating
-    form_class = RatingForm
-
-
-class RatingDetailView(DetailView):
-    model = Rating
-
-
-class RatingUpdateView(UpdateView):
-    model = Rating
-    form_class = RatingForm
-
-
-class GenreListView(ListView):
-    model = Genre
-
-
-class GenreCreateView(CreateView):
-    model = Genre
-    form_class = GenreForm
-
-
-class GenreDetailView(DetailView):
-    model = Genre
-
-
-class GenreUpdateView(UpdateView):
-    model = Genre
-    form_class = GenreForm
-
+# def artists(request):
+#     params = request.GET.copy()
+#     max = 50
+#
+#     if "max" in params

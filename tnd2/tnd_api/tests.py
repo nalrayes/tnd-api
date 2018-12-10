@@ -54,7 +54,6 @@ def create_album(**kwargs):
 def create_artist(**kwargs):
     defaults = {}
     defaults["name"] = "name"
-    defaults["average_rating"] = "average_rating"
     defaults.update(**kwargs)
     return Artist.objects.create(**defaults)
 
@@ -153,7 +152,6 @@ class ArtistViewTest(unittest.TestCase):
         url = reverse('tnd_api_artist_create')
         data = {
             "name": "name",
-            "average_rating": "average_rating",
         }
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 302)
@@ -168,7 +166,6 @@ class ArtistViewTest(unittest.TestCase):
         artist = create_artist()
         data = {
             "name": "name",
-            "average_rating": "average_rating",
         }
         url = reverse('tnd_api_artist_update', args=[artist.slug,])
         response = self.client.post(url, data)
@@ -249,5 +246,3 @@ class GenreViewTest(unittest.TestCase):
         url = reverse('tnd_api_genre_update', args=[genre.slug,])
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
-
-

@@ -11,7 +11,7 @@ class AlbumForm(forms.ModelForm):
 class ArtistForm(forms.ModelForm):
     class Meta:
         model = Artist
-        fields = ['name', 'average_rating']
+        fields = ['name']
 
 
 class RatingForm(forms.ModelForm):
@@ -24,5 +24,3 @@ class GenreForm(forms.ModelForm):
     class Meta:
         model = Genre
         fields = ['name']
-
-

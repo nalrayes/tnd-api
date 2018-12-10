@@ -26,6 +26,9 @@ def get_video_information_from_item_list(item_list):
     video_info_list = []
     for i in range (len(item_list)):
         print("Starting " + str(i))
+        if ("TRACK REVIEW" in item_list[i]['snippet']['title']):
+            print("TRACK REVIEW")
+            continue
         video_info = get_video_information_from_item(item_list[i])
         video_info_list.append(video_info)
         print("Done " + str(i))
@@ -54,7 +57,10 @@ def get_video_information_from_item(item):
     video_dict['least_fav_track'] = get_least_fav_track(description)
     video_dict['label'] = get_label(description)
     video_dict['rating'] = get_rating(description)
-    video_dict['detailed_genres'] = get_detailed_genres(description)
+    if (video_dict['rating'] == ""):
+        video_dict['detailed_genres'] = get_detailed_genres_without_score(description)
+    else:
+        video_dict['detailed_genres'] = get_detailed_genres(description)
     video_dict['year_released'] = get_year_released(description)
 
     return video_dict
@@ -62,9 +68,15 @@ def get_video_information_from_item(item):
 # write video to database function
 def write_video_to_db(video_dict):
     # create new artist for now, later check if it exists
-    artist, artist_created = Artist.objects.update_or_create(name=video_dict['artist_name'])
+    artist, artist_created = Artist.objects.get_or_create(name=video_dict['artist_name'])
     # also create new rating for now
-    rating, rating_created = Rating.objects.update_or_create(rating_val=int(video_dict['rating']))
+    # for classics or missing num, handle differently
+    if video_dict['rating'].isnumeric():
+        rating, rating_created = Rating.objects.get_or_create(rating_val=int(video_dict['rating']))
+    elif 'classic' in video_dict['rating']:
+        rating, rating_created = Rating.objects.get_or_create(is_classic=True)
+    else:
+        rating, rating_created = Rating.objects.get_or_create(adjective=video_dict['rating'])
     # leave genre empty
     album = Album(
         title=video_dict['album_name'],
@@ -105,24 +117,28 @@ def get_videos_by_playlist_id(playlist_id, page_token=None):
         playlist_items_items.extend(next_page_items)
     return playlist_items_items
 
-
-
 # get all reviews
 
 # get array of videos by id
 
 def get_album_type_from_title(title):
     res = re.search("- ( ?.+){1}? (\w+) REVIEW", title)
+    if (res == None):
+        return title
     return res[2].strip()
 
 def get_artist_name_from_title(title):
     # maybe also a bit greedy
     res = re.search("(.+) ?-", title)
+    if (res == None):
+        return title
     return res[1].strip()
 
 def get_album_name_from_title(title):
     # is this greedy
     res = re.search("- ( ?.+){1}? \w+ REVIEW", title)
+    if (res == None):
+        return title
     return res[1].strip()
 
 # return list or string?
@@ -140,12 +156,14 @@ def get_least_fav_track(desc):
     return res[1]
 
 def get_year_released(desc):
-    res = re.search("\/ (\d+) \/", desc)
+    res = re.search(" (\d+) \/", desc)
+    if (res == None):
+        return "-1"
     return res[1].strip()
 
 def get_label(desc):
     # this one search gets artist, album, and label. see if can consolidate? is that even necessary?
-    res = re.search("\/ \d+ \/ (.+) \/", desc)
+    res = re.search(" \d+ \/ (.+) \/", desc)
     if (res == None):
         return ""
     return res[1].strip()
@@ -156,9 +174,19 @@ def get_rating(desc):
         return ""
     res = re.search("\\n(( ?\w+ ?)|\d+)\/10", desc)
     # maybe check for isclassic or isnotgood
+    if (res == None):
+        return ""
     return res[1]
 
 # return list or string?
 def get_detailed_genres(desc):
      res = re.search("\/(?!.+\/ ) (.+) ?\n\n\d+", desc)
+     if (res == None):
+         return "n/a"
      return res[1].strip()
+
+def get_detailed_genres_without_score(desc):
+    res = re.search(" \d+ \/ (.+)\\n\\nY'all", desc)
+    if (res == None):
+        return "-1"
+    return res[1].strip()

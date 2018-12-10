@@ -17,9 +17,6 @@ class Artist(models.Model):
     slug = extension_fields.AutoSlugField(populate_from='name', blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     last_updated = models.DateTimeField(auto_now=True, editable=False)
-    # how can we auto populate this
-    average_rating = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-
 
     class Meta:
         ordering = ('-created',)
@@ -42,15 +39,18 @@ class Rating(models.Model):
     slug = extension_fields.AutoSlugField(populate_from='name', blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     last_updated = models.DateTimeField(auto_now=True, editable=False)
-    rating_val = models.IntegerField()
+    rating_val = models.IntegerField(blank=True, null=True)
     adjective = models.CharField(max_length=30, blank=True, null=True)
-
+    is_classic = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-created',)
 
     def __unicode__(self):
         return u'%s' % self.slug
+
+    def __str__(self):
+        return '%s' % self.rating_val
 
     def get_absolute_url(self):
         return reverse('tnd_api_rating_detail', args=(self.slug,))
@@ -94,12 +94,12 @@ class Album(models.Model):
     fav_tracks = models.TextField(max_length=510)
     least_fav_track = models.CharField(max_length=100)
     year_released = models.IntegerField()
-    record_company = models.CharField(max_length=100)
+    record_company = models.CharField(max_length=100, blank=True)
     album_type = models.CharField(max_length=30)
-    spotify_link = models.URLField()
+    spotify_link = models.URLField(blank=True)
     detailed_genres = models.CharField(max_length=100)
     youtube_link = models.URLField()
-    description = models.TextField(max_length=500)
+    description = models.TextField(max_length=5000)
 
     # Relationship Fields
     artists = models.ManyToManyField(Artist)

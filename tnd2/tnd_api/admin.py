@@ -11,8 +11,9 @@ class AlbumAdminForm(forms.ModelForm):
 
 class AlbumAdmin(admin.ModelAdmin):
     form = AlbumAdminForm
-    list_display = ['title', 'slug', 'created', 'last_updated', 'review_release_date', 'fav_tracks', 'least_fav_track', 'year_released', 'record_company', 'album_type', 'spotify_link', 'detailed_genres', 'youtube_link', 'description']
-    readonly_fields = ['title', 'slug', 'created', 'last_updated', 'review_release_date', 'fav_tracks', 'least_fav_track', 'year_released', 'record_company', 'album_type', 'spotify_link', 'detailed_genres', 'youtube_link', 'description']
+    rating_val = lambda album: album.rating.rating_val
+    list_display = ['title', 'slug', rating_val, 'created', 'last_updated', 'review_release_date', 'fav_tracks', 'least_fav_track', 'year_released', 'record_company', 'album_type', 'spotify_link', 'detailed_genres', 'youtube_link']
+    # readonly_fields = ['title', 'slug', 'created', 'last_updated', 'review_release_date', 'fav_tracks', 'least_fav_track', 'year_released', 'record_company', 'album_type', 'spotify_link', 'detailed_genres', 'youtube_link', 'description']
 
 admin.site.register(Album, AlbumAdmin)
 
@@ -26,8 +27,8 @@ class ArtistAdminForm(forms.ModelForm):
 
 class ArtistAdmin(admin.ModelAdmin):
     form = ArtistAdminForm
-    list_display = ['name', 'slug', 'created', 'last_updated', 'average_rating']
-    readonly_fields = ['name', 'slug', 'created', 'last_updated', 'average_rating']
+    list_display = ['name', 'slug', 'created', 'last_updated']
+    readonly_fields = ['name', 'slug']
 
 admin.site.register(Artist, ArtistAdmin)
 
@@ -60,5 +61,3 @@ class GenreAdmin(admin.ModelAdmin):
     readonly_fields = ['name', 'slug', 'created', 'last_updated']
 
 admin.site.register(Genre, GenreAdmin)
-
-
