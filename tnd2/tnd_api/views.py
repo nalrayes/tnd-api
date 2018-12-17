@@ -75,9 +75,9 @@ def _create_next_page_url_to_format(request):
         after_page = after_page.lstrip('123456789')
         return before_page + "%d" + after_page
     elif len(request.GET) > 1:
-        return request_url + "&page=%d"
+        return request_url + "&page={}"
     else:
-        return request_url + "?page=%d"
+        return request_url + "?page={}"
 
 def albums(request):
     params = request.GET.copy()
@@ -113,12 +113,14 @@ def albums(request):
     if albums_page.has_next():
         next_page_num = albums_page.next_page_number()
         albums_obj["meta"]["nextPage"] = next_page_num
-        albums_obj["meta"]["nextPageURL"] = format_for_page % next_page_num
+        print("hello")
+        print(format_for_page, next_page_num)
+        albums_obj["meta"]["nextPageURL"] = format_for_page.format(next_page_num)
 
     if albums_page.has_previous():
         prev_page_num = albums_page.previous_page_number()
         albums_obj["meta"]["prevPage"] = prev_page_num
-        albums_obj["meta"]["prevPageURL"] = format_for_page % prev_page_num
+        albums_obj["meta"]["prevPageURL"] = format_for_page.format(prev_page_num)
     return JsonResponse(albums_obj)
 
 def single_album(request, id):
@@ -221,9 +223,9 @@ def artists(request):
     if artists_page.has_next():
         next_page_num = artists_page.next_page_number()
         artists_obj["meta"]["nextPage"] = next_page_num
-        artists_obj["meta"]["nextPageURL"] = format_for_page % next_page_num
+        artists_obj["meta"]["nextPageURL"] = format_for_page.format(next_page_num)
     if artists_page.has_previous():
         prev_page_num = artists_page .previous_page_number()
         artists_obj["meta"]["prevPage"] = prev_page_num
-        artists_obj["meta"]["prevPageURL"] = format_for_page % prev_page_num
+        artists_obj["meta"]["prevPageURL"] = format_for_page.format(prev_page_num)
     return JsonResponse(artists_obj)
