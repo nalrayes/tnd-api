@@ -44,7 +44,7 @@ class RatingAdminForm(forms.ModelForm):
 class RatingAdmin(admin.ModelAdmin):
     form = RatingAdminForm
     list_display = ['name', 'slug', 'created', 'last_updated', 'rating_val', 'adjective']
-    readonly_fields = ['name', 'slug', 'created', 'last_updated', 'rating_val', 'adjective']
+    readonly_fields = ['name', 'slug']
 
 admin.site.register(Rating, RatingAdmin)
 

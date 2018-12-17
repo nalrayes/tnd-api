@@ -41,7 +41,13 @@ class Rating(models.Model):
     last_updated = models.DateTimeField(auto_now=True, editable=False)
     rating_val = models.IntegerField(blank=True, null=True)
     adjective = models.CharField(max_length=30, blank=True, null=True)
-    is_classic = models.BooleanField(default=False)
+
+    NORMAL_REVIEW = "normal"
+    CLASSIC_REVIEW = "classic"
+    NOT_GOOD = "not good"
+    REVIEW_TYPES = ((NORMAL_REVIEW, "normal"), \
+    (CLASSIC_REVIEW, "classic"), (NOT_GOOD, "NOTGOOD"))
+    review_type = models.CharField(max_length=10, default="normal", choices=REVIEW_TYPES)
 
     class Meta:
         ordering = ('-created',)
@@ -91,13 +97,13 @@ class Album(models.Model):
 
     title = models.CharField(max_length=255)
     review_release_date = models.DateField()
-    fav_tracks = models.TextField(max_length=510)
-    least_fav_track = models.CharField(max_length=100)
+    fav_tracks = models.TextField(max_length=5000, blank=True)
+    least_fav_track = models.CharField(max_length=100, blank=True)
     year_released = models.IntegerField()
     record_company = models.CharField(max_length=100, blank=True)
     album_type = models.CharField(max_length=30)
     spotify_link = models.URLField(blank=True)
-    detailed_genres = models.CharField(max_length=100)
+    detailed_genres = models.CharField(max_length=1000)
     youtube_link = models.URLField()
     description = models.TextField(max_length=5000)
 

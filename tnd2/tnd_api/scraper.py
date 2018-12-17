@@ -66,15 +66,15 @@ def get_video_information_from_item(item):
     return video_dict
 
 # write video to database function
-def write_video_to_db(video_dict):
+def write_video_to_db(video_dict, is_classic=False):
     # create new artist for now, later check if it exists
     artist, artist_created = Artist.objects.get_or_create(name=video_dict['artist_name'])
     # also create new rating for now
     # for classics or missing num, handle differently
     if video_dict['rating'].isnumeric():
         rating, rating_created = Rating.objects.get_or_create(rating_val=int(video_dict['rating']))
-    elif 'classic' in video_dict['rating']:
-        rating, rating_created = Rating.objects.get_or_create(is_classic=True)
+    elif 'classic' in video_dict['rating'] or is_classic:
+        rating, rating_created = Rating.objects.get_or_create(review_type="classic")
     else:
         rating, rating_created = Rating.objects.get_or_create(adjective=video_dict['rating'])
     # leave genre empty
@@ -116,6 +116,18 @@ def get_videos_by_playlist_id(playlist_id, page_token=None):
         next_page_items = get_videos_by_playlist_id(playlist_id, page_token=token)
         playlist_items_items.extend(next_page_items)
     return playlist_items_items
+
+def write_playlist_to_db(playlist_id, is_classic=False):
+    print("Retrieving information from YouTube...")
+    playlist_items = get_videos_by_playlist_id(playlist_id)
+    print("Done!")
+    print("Converting to item list")
+    video_info = get_video_information_from_item_list(playlist_items)
+    print("Done!")
+    print("Writing to DB...")
+    for vid in video_info:
+        write_video_to_db(vid, is_classic=is_classic)
+    print("Done!")
 
 # get all reviews
 
